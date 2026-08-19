@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Alarme • Remoto</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <section id="loginScreen" class="screen">
+    <div class="login-card">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <h1>ALARME • REMOTO</h1>
+      </div>
+      <p class="subtitle">Digite o PIN para acessar</p>
+      <div id="pinDots" class="pin-dots">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="keypad">
+        <button class="key" data-k="1">1</button>
+        <button class="key" data-k="2">2</button>
+        <button class="key" data-k="3">3</button>
+        <button class="key" data-k="4">4</button>
+        <button class="key" data-k="5">5</button>
+        <button class="key" data-k="6">6</button>
+        <button class="key" data-k="7">7</button>
+        <button class="key" data-k="8">8</button>
+        <button class="key" data-k="9">9</button>
+        <button class="key ghost" data-k="clear">C</button>
+        <button class="key" data-k="0">0</button>
+        <button class="key ghost" data-k="back">⌫</button>
+      </div>
+      <p id="loginError" class="error-msg"></p>
+    </div>
+  </section>
+
+  <section id="mainScreen" class="screen hidden">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-dot" id="statusDot"></span>
+        <h1>ALARME • REMOTO</h1>
+      </div>
+      <button id="logoutBtn" class="icon-btn" title="Sair">⏻</button>
+    </header>
+
+    <div class="status-banner" id="statusBanner">
+      <span id="statusText">Desarmado</span>
+      <span id="statusTimer" class="status-timer"></span>
+    </div>
+
+    <div class="arm-switch-wrap">
+      <span class="switch-label">Desarmado</span>
+      <button id="armSwitch" class="arm-switch" role="switch" aria-checked="false">
+        <span class="arm-switch-knob"></span>
+      </button>
+      <span class="switch-label">Armado</span>
+    </div>
+
+    <div class="zones-grid" id="zonesGrid"></div>
+    <p class="hint-text">Toque num setor pra armar/desarmar só ele. Status atualiza a cada poucos segundos.</p>
+  </section>
+
+<script src="script-remote.js"></script>
+</body>
+</html>
