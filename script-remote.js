@@ -1,8 +1,8 @@
 // ============================================================
 // PREENCHA com os mesmos dados do config.h do firmware:
 // ============================================================
-const FIREBASE_HOST   = "SEU-PROJETO-default-rtdb.firebaseio.com";
-const FIREBASE_SECRET = "SEU_DATABASE_SECRET_AQUI";
+const FIREBASE_HOST   = "central-de-alarme-fa4ef-default-rtdb.firebaseio.com";
+const FIREBASE_SECRET = "nXGkmt4WFSckD4fPd6kCpFAXORIqF15INqQS49Qw";
 // ============================================================
 
 const STATE_LABELS = {
