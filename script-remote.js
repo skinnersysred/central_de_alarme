@@ -1,7 +1,7 @@
 // ============================================================
 // PREENCHA com os mesmos dados do config.h do firmware:
 // ============================================================
-const FIREBASE_HOST   = "Scentral-de-alarme-fa4ef-default-rtdb.firebaseio.com";
+const FIREBASE_HOST   = "central-de-alarme-fa4ef-default-rtdb.firebaseio.com";
 const FIREBASE_SECRET = "nXGkmt4WFSckD4fPd6kCpFAXORIqF15INqQS49Qw";
 // ============================================================
 
@@ -69,7 +69,7 @@ async function doLogin() {
       $("loginError").textContent = "ESP32 offline ou sem resposta.";
       currentPin = ""; updatePinDots();
     }
-  }, 3500); // dá tempo do ESP32 buscar o comando (poll a cada ~2s) e responder
+  }, 5000); // dá tempo do ESP32 buscar o comando (poll a cada ~3.5s) e responder
 }
 
 $("logoutBtn").addEventListener("click", () => {
