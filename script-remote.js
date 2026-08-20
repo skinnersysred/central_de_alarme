@@ -1,7 +1,7 @@
 // ============================================================
 // PREENCHA com os mesmos dados do config.h do firmware:
 // ============================================================
-const FIREBASE_HOST   = "central-de-alarme-fa4ef-default-rtdb.firebaseio.com";
+const FIREBASE_HOST   = "Scentral-de-alarme-fa4ef-default-rtdb.firebaseio.com";
 const FIREBASE_SECRET = "nXGkmt4WFSckD4fPd6kCpFAXORIqF15INqQS49Qw";
 // ============================================================
 
@@ -38,12 +38,38 @@ document.querySelectorAll(".key").forEach(btn => {
 });
 
 async function doLogin() {
-  // Não há como validar o PIN sem contato direto com o ESP32 (ele está
-  // atrás do CG-NAT). Guardamos o PIN localmente e o ESP32 confere ele
-  // a cada comando enviado — se estiver errado, o comando é ignorado.
-  pin = currentPin;
-  sessionStorage.setItem("alarme_pin", pin);
-  enterMain();
+  const candidatePin = currentPin;
+  $("loginError").textContent = "Verificando...";
+  const ts = Date.now();
+  try {
+    await fetch(dbUrl("commands"), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "validate", pin: candidatePin, ts })
+    });
+  } catch (e) {
+    $("loginError").textContent = "Sem conexão com o Firebase.";
+    currentPin = ""; updatePinDots();
+    return;
+  }
+  setTimeout(async () => {
+    try {
+      const res = await fetch(dbUrl("lastResult"));
+      const data = await res.json();
+      if (data && data.ts === ts && data.ok) {
+        pin = candidatePin;
+        sessionStorage.setItem("alarme_pin", pin);
+        $("loginError").textContent = "";
+        enterMain();
+      } else {
+        $("loginError").textContent = "PIN incorreto.";
+        currentPin = ""; updatePinDots();
+      }
+    } catch (e) {
+      $("loginError").textContent = "ESP32 offline ou sem resposta.";
+      currentPin = ""; updatePinDots();
+    }
+  }, 3500); // dá tempo do ESP32 buscar o comando (poll a cada ~2s) e responder
 }
 
 $("logoutBtn").addEventListener("click", () => {
@@ -93,7 +119,9 @@ function render(status) {
     $("statusTimer").textContent = "";
   }
 
-  $("armSwitch").setAttribute("aria-checked", status.state !== "disarmed" ? "true" : "false");
+  if (!switchDragging) {
+    $("armSwitch").setAttribute("aria-checked", status.state !== "disarmed" ? "true" : "false");
+  }
   renderZones(status.zones || []);
 }
 
@@ -133,9 +161,50 @@ async function sendCommand(action, extra = {}) {
   setTimeout(fetchStatus, 3500);
 }
 
-$("armSwitch").addEventListener("click", () => {
-  const isArmed = $("armSwitch").getAttribute("aria-checked") === "true";
-  sendCommand(isArmed ? "disarm" : "arm");
+// ---------------- ARM SWITCH (arrastável) ----------------
+let switchDragging = false;
+const armSwitchEl = $("armSwitch");
+const armKnobEl = armSwitchEl.querySelector(".arm-switch-knob");
+let dragStartX = 0, dragBaseX = 0, dragMax = 0;
+
+function switchMaxTranslate() {
+  return armSwitchEl.clientWidth - armKnobEl.clientWidth - 6;
+}
+
+armSwitchEl.addEventListener("pointerdown", (e) => {
+  switchDragging = true;
+  armSwitchEl.setPointerCapture(e.pointerId);
+  dragStartX = e.clientX;
+  dragMax = switchMaxTranslate();
+  const isArmed = armSwitchEl.getAttribute("aria-checked") === "true";
+  dragBaseX = isArmed ? dragMax : 0;
+  armKnobEl.style.transition = "none";
+});
+
+armSwitchEl.addEventListener("pointermove", (e) => {
+  if (!switchDragging) return;
+  let x = dragBaseX + (e.clientX - dragStartX);
+  x = Math.max(0, Math.min(dragMax, x));
+  armKnobEl.style.transform = `translateX(${x}px)`;
+});
+
+armSwitchEl.addEventListener("pointerup", (e) => {
+  if (!switchDragging) return;
+  switchDragging = false;
+  armKnobEl.style.transition = "";
+  armKnobEl.style.transform = "";
+  let x = dragBaseX + (e.clientX - dragStartX);
+  x = Math.max(0, Math.min(dragMax, x));
+  const shouldArm = x > dragMax / 2;
+  const isArmed = armSwitchEl.getAttribute("aria-checked") === "true";
+  if (shouldArm === isArmed) return;
+  sendCommand(shouldArm ? "arm" : "disarm");
+});
+
+armSwitchEl.addEventListener("pointercancel", () => {
+  switchDragging = false;
+  armKnobEl.style.transition = "";
+  armKnobEl.style.transform = "";
 });
 
 if (pin) enterMain();
