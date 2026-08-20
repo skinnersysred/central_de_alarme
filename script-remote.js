@@ -40,12 +40,12 @@ document.querySelectorAll(".key").forEach(btn => {
 async function doLogin() {
   const candidatePin = currentPin;
   $("loginError").textContent = "Verificando...";
-  const ts = Date.now();
+  const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
   try {
     await fetch(dbUrl("commands"), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "validate", pin: candidatePin, ts })
+      body: JSON.stringify({ action: "validate", pin: candidatePin, token })
     });
   } catch (e) {
     $("loginError").textContent = "Sem conexão com o Firebase.";
@@ -56,7 +56,7 @@ async function doLogin() {
     try {
       const res = await fetch(dbUrl("lastResult"));
       const data = await res.json();
-      if (data && data.ts === ts && data.ok) {
+      if (data && data.token === token && data.ok) {
         pin = candidatePin;
         sessionStorage.setItem("alarme_pin", pin);
         $("loginError").textContent = "";
