@@ -150,6 +150,7 @@ html, body {
   background: var(--surface-2);
   position: relative;
   padding: 0;
+  touch-action: none;
   transition: background .25s, border-color .25s;
 }
 .arm-switch[aria-checked="true"] {
